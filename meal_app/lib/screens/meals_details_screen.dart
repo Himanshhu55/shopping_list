@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_app/models/meal.dart';
 import 'package:meal_app/providers/favorites_provider.dart';
 
+import 'package:meal_app/screens/tabs.dart';
+
 class MealDetailsScreen extends ConsumerWidget {
   const MealDetailsScreen({super.key, required this.meal});
 
@@ -10,6 +12,8 @@ class MealDetailsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final favoriteMeals = ref.watch(favoriteMealsProvider);
+    final isFavorite = favoriteMeals.contains(meal);
     return Scaffold(
         appBar: AppBar(
           actions: [
@@ -18,7 +22,9 @@ class MealDetailsScreen extends ConsumerWidget {
                   final wasAdded = ref
                       .read(favoriteMealsProvider.notifier)
                       .toggleMealsFavoriteStatus(meal);
-                  Navigator.pop(context);
+
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: ((context) => const TabsScreen())));
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -28,7 +34,7 @@ class MealDetailsScreen extends ConsumerWidget {
                     ),
                   );
                 },
-                icon: const Icon(Icons.star))
+                icon: Icon(isFavorite ? Icons.star : Icons.star_border))
           ],
           title: Text(meal.title),
         ),

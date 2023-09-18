@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'meals_provider.dart';
+import 'package:meal_app/providers/meals_provider.dart';
 
 enum Filter {
   glutenFree,
@@ -9,39 +9,48 @@ enum Filter {
   vegan,
 }
 
-class FilterNotifier extends StateNotifier<Map<Filter, bool>> {
-  FilterNotifier()
+class FiltersNotifier extends StateNotifier<Map<Filter, bool>> {
+  FiltersNotifier()
       : super({
           Filter.glutenFree: false,
           Filter.lactoseFree: false,
           Filter.vegetarian: false,
-          Filter.vegan: false,
+          Filter.vegan: false
         });
 
-  void setFilters(Map<Filter, bool> chosenFilter) {
-    state = chosenFilter;
+  void setFilters(Map<Filter, bool> chosenFilters) {
+    state = chosenFilters;
   }
 
   void setFilter(Filter filter, bool isActive) {
-    state = {...state, filter: isActive};
+    // state[filter] = isActive; // not allowed! => mutating state
+    state = {
+      ...state,
+      filter: isActive,
+    };
   }
 }
 
-final filterProvider = StateNotifierProvider((ref) => FilterNotifier());
+final filtersProvider =
+    StateNotifierProvider<FiltersNotifier, Map<Filter, bool>>(
+  (ref) => FiltersNotifier(),
+);
+
 final filteredMealsProvider = Provider((ref) {
   final meals = ref.watch(mealProvider);
-  final activeFilter = ref.watch(filterProvider);
+  final activeFilters = ref.watch(filtersProvider);
+
   return meals.where((meal) {
-    if (activeFilter[Filter.glutenFree]! && !meal.isGlutenFree) {
+    if (activeFilters[Filter.glutenFree]! && !meal.isGlutenFree) {
       return false;
     }
-    if (activeFilter[Filter.lactoseFree]! && !meal.isLactoseFree) {
+    if (activeFilters[Filter.lactoseFree]! && !meal.isLactoseFree) {
       return false;
     }
-    if (activeFilter[Filter.vegetarian]! && !meal.isVegetarian) {
+    if (activeFilters[Filter.vegetarian]! && !meal.isVegetarian) {
       return false;
     }
-    if (activeFilter[Filter.vegan]! && !meal.isVegan) {
+    if (activeFilters[Filter.vegan]! && !meal.isVegan) {
       return false;
     }
     return true;
